@@ -1,0 +1,167 @@
+<!DOCTYPE html >
+<html>
+  <head>
+    <meta name="viewport" content="initial-scale=1.0, maximum-scale=1.0, user-scalable=no;" />
+    <meta http-equiv="Content-type" content="text/html; charset=utf-8">
+    <title>PhoneGap</title>
+    <style type="text/css">
+        div {border: 1px solid black;}
+        input {width: 100%;}
+    </style>
+    <script type="text/javascript" charset="utf-8" src="cordova-2.2.0.js"></script>
+    
+    
+    <link rel="stylesheet" href="css/jquery.mobile-1.2.0.min.css">
+
+
+    <script type="text/javascript" src="js/jquery.min.1.6.4.js"></script>
+    <script type="text/javascript" src="js/jquery.mobile-1.2.0.min.js"></script>    
+    
+    <script type="text/javascript" charset="utf-8"> 
+    var deviceReady = false;
+    var db = null;
+    var uri1 = null;
+    var video = null;
+    document.addEventListener("deviceready", onDeviceReady, false);
+
+    function onDeviceReady() 
+    {
+        
+    }
+
+
+    // Called when capture operation is finished
+    //
+    function captureSuccess(mediaFiles) {
+        var i, len;
+        //alert("inside success");
+        for (i = 0, len = mediaFiles.length; i < len; i += 1) {
+            uploadFile(mediaFiles[i]);
+        }       
+    }
+
+
+
+    // Called if something bad happens.
+    // 
+    function captureError(error) {
+        var msg = 'An error occurred during capture: ' + error.code;
+        navigator.notification.alert(msg, null, 'Uh oh!');
+    }
+
+
+
+    // A button will call this function
+    //
+    function captureVideo() {
+        // Launch device video recording application, 
+        // allowing user to capture up to 2 video clips
+        navigator.device.capture.captureVideo(captureSuccess, captureError, {limit: 1});
+    }
+
+
+
+    //insert video
+    function insert_video(tx) {
+        //alert("inside insert");
+       tx.executeSql('INSERT INTO URI (data) VALUES ("' + uri1 +'")');
+       document.getElementById('camera_video').src = uri1;
+       //alert(""+document.getElementById('camera_video').src);
+        document.getElementById('camera_status').innerHTML = "Success";
+    }
+
+
+
+    //select video
+    //
+    function selectVideo() {
+       navigator.camera.getPicture(
+                function(uri)
+                {
+                    //alert("inside selectvideo");
+                    video = document.getElementById('camera_video');
+                    video.style.visibility = "visible";
+                    video.style.display = "block";
+                    video.src = uri;
+                    uri1 = video.src;
+                    window.sessionStorage.setItem("mediaurl", uri1);
+                    var db = window.openDatabase("DB18", "8.0", "Database Demo", 200000);
+                    db.transaction(insert_video, captureError);
+                },
+                function(e)
+                {
+                    //alert(e+"");
+                    console.log("Error getting picture: " + e);
+                    document.getElementById('camera_status').innerHTML = "Error getting picture.";
+                },
+                { quality: 50, destinationType: navigator.camera.DestinationType.FILE_URI, sourceType: navigator.camera.PictureSourceType.PHOTOLIBRARY, mediaType: navigator.camera.MediaType.VIDEO});
+    }
+
+
+
+    // Upload files to server
+    function uploadFile(mediaFile) {
+       //alert("inside upload");
+        path = mediaFile.fullPath;
+        //name = mediaFile.name;
+        //alert(""+path);
+        //tx.executeSql('CREATE TABLE IF NOT EXISTS URI (id INTEGER PRIMARY KEY AUTOINCREMENT, data VARCHAR(255))');
+         video = document.getElementById('camera_video');
+         video.style.visibility = "visible";
+         video.style.display = "block";
+         uri1 = path;
+         document.getElementById('camera_video').src = path;
+         //alert(""+document.getElementById('camera_video').src);
+         window.sessionStorage.setItem("mediaurl", uri1);
+         var db = window.openDatabase("DB17", "7.0", "Database Demo", 200000);
+         db.transaction(insert_video, captureError);
+    }
+
+    </script>
+    </head>
+    <body>
+        <div data-role="page">
+
+<div data-role="header" data-theme="b">
+    <h3>Upload Video</h3>
+    </div>
+    
+    <!--  <div>
+        <h3>Server URL for upload.php:</h3>
+        <input id="serverUrl" type="text" value="http://MY_SERVER/mobile/upload.php" />
+    </div>
+    <br/>-->
+
+
+      <!-- Camera -->
+      <div>
+            <h3>Camera:</h3>
+            <b>Status:</b> <span id="camera_status"></span><br>
+        <b>Video:</b> <embed id="camera_video" width="200" height="120" src=""></embed>
+
+      </div>
+        
+    <!-- Actions -->
+    <div>
+        <input type="button" onclick="captureVideo();" value="Take Video" data-theme="d"/><br/>
+        <input type="button" onclick="selectVideo();" value="Select Video from Library" data-theme="d"/><br/>
+        <a data-role="button"  href="postfeedback.html" value="Upload Video" data-ajax="false" data-theme="d">Upload Video</a>
+    </div>
+    <br/>
+    
+    <!-- Server pictures 
+    <div>
+        <h3>Server:</h3>
+        <b>Images on server:</b>
+        <div id="server_images"></div>
+    </div>
+
+
+    <!-- Actions 
+    <div>
+        <input type="button" onclick="viewUploadedPictures();" value="View Uploaded Pictures" />
+    </div>
+    -->
+    </div>
+    </body>
+</html>

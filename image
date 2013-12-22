@@ -1,0 +1,235 @@
+<!DOCTYPE html >
+<html>
+  <head>
+    <meta name="viewport" content="initial-scale=1.0, maximum-scale=1.0, user-scalable=no;" />
+    <meta http-equiv="Content-type" content="text/html; charset=utf-8">
+    <title>PhoneGap</title>
+    <style type="text/css">
+        div {border: 1px solid black;}
+        input {width: 100%;}
+    </style>
+    <script type="text/javascript" charset="utf-8" src="cordova-2.2.0.js"></script>
+    
+    
+    <link rel="stylesheet" href="css/jquery.mobile-1.2.0.min.css">
+
+
+    <script type="text/javascript" src="js/jquery.min.1.6.4.js"></script>
+    <script type="text/javascript" src="js/jquery.mobile-1.2.0.min.js"></script>    
+    
+    <script type="text/javascript" charset="utf-8">      
+    var deviceReady = false;
+    var db = null;
+    var uri1 = null;
+    var img = null;
+    document.addEventListener("deviceready", onDeviceReady, false);
+
+    function onDeviceReady() 
+    {
+        
+    }
+
+    function init()
+    {
+    	var user=window.sessionStorage.getItem("username");
+        window.sessionStorage.setItem("username", user);
+    }
+    
+
+ // Called if something bad happens.
+    // 
+    function captureError(error) {
+        var msg = 'An error occurred during capture: ' + error.code;
+        navigator.notification.alert(msg, null, 'Uh oh!');
+    }
+
+
+    
+    // Called when capture operation is finished
+    //
+    function captureSuccess(mediaFiles) {
+        var i, len;
+        //alert("inside success");
+        for (i = 0, len = mediaFiles.length; i < len; i += 1) {
+            uploadFile(mediaFiles[i]);
+        }       
+    }
+
+    
+    function takePicture()
+    {
+    	 navigator.device.capture.captureImage(captureSuccess, captureError, {limit: 1});
+         
+      //db = window.openDatabase("DB99", "1.0", "Database Demo", 200000);
+       // db.transaction(populateDB1, errorCB, successCB);
+    }
+
+
+   
+    function selectPicture()
+    {
+      db = window.openDatabase("DB18", "8.0", "Database Demo", 200000);
+        db.transaction(populateDB, errorCB, successCB);
+        
+    }
+    
+    /*function init() {
+        document.addEventListener("deviceready", function() {deviceReady = true;}, false);
+       // db = window.openDatabase("DB2", "3.0", "Database Demo", 200000);       
+        window.setTimeout(function() {
+            if (!deviceReady) {
+                //alert("Error: PhoneGap did not initialize.  Demo will not run correctly.");
+            }
+        },2000);
+    }*/
+    function populateDB(tx)
+    {
+        ////alert("populatedb");
+        tx.executeSql('CREATE TABLE IF NOT EXISTS URI (id INTEGER PRIMARY KEY AUTOINCREMENT, uri VARCHAR(255))');
+         navigator.camera.getPicture(
+            function(uri)
+            {
+                //alert(uri+"");
+                img = document.getElementById('camera_image');
+                img.style.visibility = "visible";
+                img.style.display = "block";
+                img.src = uri;
+                uri1 = img.src;
+                window.sessionStorage.setItem("imageurl", uri1);
+                tx.executeSql('INSERT INTO URI (uri) VALUES ("' + uri1 +'")');
+                document.getElementById('camera_status').innerHTML = "Success";
+            },
+            function(e)
+            {
+                  //alert(e+"");
+                console.log("Error getting picture: " + e);
+                document.getElementById('camera_status').innerHTML = "Error getting picture.";
+            },
+            { quality: 50, destinationType: navigator.camera.DestinationType.FILE_URI, sourceType: navigator.camera.PictureSourceType.PHOTOLIBRARY});
+         
+         
+         
+         
+    }
+
+    //sessionStorage.setItem(uri1,'label');
+    
+    function queryDB(tx) {
+        tx.executeSql('SELECT * FROM URI', [], querySuccess, errorCB);
+    }
+    function querySuccess(tx, results) {
+        var len = results.rows.length;
+        //alert("DEMO table: " + len + " rows found.");
+        for (var i=0; i<len; i++){
+           // //alert("Row = " + i + " ID = " + results.rows.item(i).id + " uri =  " + results.rows.item(i).uri);
+        }
+    }
+    function errorCB(err) {
+        //alert("errorCB");
+        console.log("Error processing SQL: "+err.code);
+    }
+    function successCB() {
+        ////alert("successCB");
+        db = window.openDatabase("DB18", "8.0", "Database Demo", 200000);
+        db.transaction(queryDB, errorCB);
+    }
+
+
+
+
+    // Upload files to server
+    function uploadFile(mediaFile) {
+    	//alert("inside upload");
+    	 path = mediaFile.fullPath;
+    	 //name = mediaFile.name;
+    	 //alert(""+path);
+    	 //tx.executeSql('CREATE TABLE IF NOT EXISTS URI (id INTEGER PRIMARY KEY AUTOINCREMENT, data VARCHAR(255))');
+          img = document.getElementById('camera_image');
+          img.style.visibility = "visible";
+          img.style.display = "block";
+          uri1 = path;
+         document.getElementById('camera_image').src = path;
+         //alert(""+document.getElementById('camera_image').src);
+         window.sessionStorage.setItem("imageurl", uri1);
+        // var db = window.openDatabase("DB99", "1.0", "Database Demo", 200000);
+         //db.transaction(insert_video, captureError);
+         document.getElementById('camera_status').innerHTML = "Success";
+    }
+    
+  /*  function populateDB1(tx) {
+        ////alert("populatedb");
+        tx.executeSql('CREATE TABLE IF NOT EXISTS URI (id INTEGER PRIMARY KEY AUTOINCREMENT, data VARCHAR(255))');
+         navigator.camera.getPicture(
+            function(uri) {
+                //alert(uri+"");
+                img = document.getElementById('camera_image');
+                img.style.visibility = "visible";
+                img.style.display = "block";
+                img.src = uri;
+                uri1 = img.src;
+                tx.executeSql('INSERT INTO DEMO (data) VALUES ("' + uri1 +'")');
+                document.getElementById('camera_status').innerHTML = "Success";
+            },
+            function(e) {
+                  //alert(e+"");
+                console.log("Error getting picture: " + e);
+                document.getElementById('camera_status').innerHTML = "Error getting picture.";
+            },
+            { quality: 50, destinationType: navigator.camera.DestinationType.FILE_URI});
+        
+            
+    }*/
+
+
+    </script>
+
+
+  </head>
+
+<body onload="init();">
+<div data-role="page">
+
+<div data-role="header" data-theme="b">
+    <h3>Upload Picture</h3>
+    </div>
+    
+    <!--  <div>
+        <h3>Server URL for upload.php:</h3>
+        <input id="serverUrl" type="text" value="http://MY_SERVER/mobile/upload.php" />
+    </div>
+    <br/>-->
+
+
+      <!-- Camera -->
+      <div>
+            <h3>Camera:</h3>
+            <b>Status:</b> <span id="camera_status"></span><br>
+        <b>Image:</b> <img style="width:120px;visibility:hidden;display:none;" id="camera_image" src="" />
+      </div>
+        
+    <!-- Actions -->
+    <div>
+        <input type="button" onclick="takePicture();" value="Take Picture" data-theme="d"/><br/>
+        <input type="button" onclick="selectPicture();" value="Select Picture from Library" data-theme="d"/><br/>
+        <a data-role="button"  href="postfeedback.html" value="Upload Picture" data-ajax="false" data-theme="d">Upload Picture</a>
+    </div>
+    <br/>
+    
+    <!-- Server pictures 
+    <div>
+        <h3>Server:</h3>
+        <b>Images on server:</b>
+        <div id="server_images"></div>
+    </div>
+
+
+    <!-- Actions 
+    <div>
+        <input type="button" onclick="viewUploadedPictures();" value="View Uploaded Pictures" />
+    </div>
+    -->
+    </div>
+  </body>
+</html>
+
+

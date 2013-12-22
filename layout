@@ -1,0 +1,491 @@
+<!DOCTYPE html >
+<html>
+<head>
+<meta name="viewport" content="width=device-width, initial-scale=1">	
+
+<link rel="stylesheet" href="css/jquery.mobile-1.2.0.min.css">
+
+<script type="text/javascript" src="cordova-2.2.0.js"></script>
+<script type="text/javascript" src="js/jquery.min.1.6.4.js"></script>
+<script type="text/javascript" src="js/jquery.mobile-1.2.0.min.js"></script>
+
+<script type="text/javascript" charset="utf-8"><!--
+//var db;
+var global_id;
+var ni;
+var global_return_string;
+var db;
+var id;
+var image_uri;
+var audio_uri;
+var video_uri;
+var username;
+var post;
+var comments;
+var no_of_likes;
+var text_to_be_added;
+var textId;
+var comment_id;
+var temp;
+
+var search_id = new Array();
+var u_comments = new Array();
+
+
+function onDeviceReady()
+{
+	//db = window.openDatabase("DB17", "7.0", "Database Demo", 200000);
+	
+}
+
+function init()
+{
+	db = window.openDatabase("DB18", "8.0", "Database Demo", 200000);
+   	//db.transaction(queryDB, errorCB);	  
+	document.addEventListener("deviceready", onDeviceReady, false);
+	db.transaction(queryDB, errorCB);
+}
+
+function removeElement() 
+{
+	db = window.openDatabase("DB18", "8.0", "Database Demo", 200000);
+   	db.transaction(queryDB_remove, errorCB);
+	
+	 
+
+}
+function queryDB_remove(tx) {
+	////alert("querydb");
+    tx.executeSql('SELECT * FROM FEEDBACK', [], querySuccess_remove, errorCB);
+}
+
+function querySuccess_remove(tx, results) 
+{
+	 var len = results.rows.length;
+	 for (var i=0; i<len; i++)
+	    { 
+		    var div_remove_id='div'+results.rows.item(i).id;
+
+		    var d = document.getElementById('myDiv');
+
+			var olddiv = document.getElementById(div_remove_id);
+
+			d.removeChild(olddiv);
+	    }
+	 
+}
+
+
+function queryDB(tx) {
+	////alert("querydb");
+    tx.executeSql('SELECT * FROM FEEDBACK', [], querySuccess, errorCB);
+}
+function querySuccess(tx, results) 
+{
+    var len = results.rows.length;
+    ////alert("FEEDBACK table: " + len + " rows found.");
+    for (var i=0; i<len; i++)
+    { 
+       // //alert("Row = " + i + " ID = " + results.rows.item(i).id + " uri =  " + results.rows.item(i).uri);
+
+		id=results.rows.item(i).id;
+		image_uri=results.rows.item(i).uri_image;
+		audio_uri=results.rows.item(i).uri_audio;
+		video_uri=results.rows.item(i).uri_video;
+		username=results.rows.item(i).username;
+		post=results.rows.item(i).post;
+		comments=results.rows.item(i).comments;
+		no_of_likes=results.rows.item(i).no_of_likes;
+		
+    	ni = document.getElementById('myDiv');
+
+  	  	var numi = document.getElementById('theValue');
+  	  	////alert(id);
+
+  	  	//var num = (document.getElementById('theValue').value -1)+ 2;
+
+  	  	//numi.value = num;
+
+  	  	var newdiv = document.createElement('div');
+
+  	  	var divId = 'div'+id;
+
+  	  	var imgId = 'img'+id;
+
+  	 	var buttonId = 'button'+id;
+
+  	  	var btnLikeId = 'buttonlike'+id;
+
+  	  	var pId='p'+id;
+  	  
+	  	textId='text'+id;
+  	  	newdiv.setAttribute('id',divId);
+
+  		
+  		
+  	  	if(image_uri!=null && image_uri!='undefined')//second condition to be checked***********************************
+  	  	{
+  	  		////alert(image_uri);
+		  	newdiv.innerHTML = '<img  border="0" id="'+imgId+'" src="'+image_uri+'" width="100" height="100" /> ' +'<br/>'+
+          						'<input type="button" value="Like" id="'+btnLikeId+'"></input>'+'<p>'+username+' says:</p>'+'<hr/>'+'<p>'+post+'</p>'+'<p id="'+pId+'"></p><hr/>'+'<textarea id="'+textId+'" cols="20" rows="10" placeholder="comment here"></textarea>'+'<br/>'+'<input type="button" id="'+buttonId+'" value="comment" onclick="addcomment(this.id);"></input>';
+
+
+          	ni.appendChild(newdiv);
+          	
+      		global_id=id;
+      		db = window.openDatabase("DB18", "8.0", "Database Demo", 200000);
+
+      		////alert('BEFORE CRAP '+i);
+      		global_return_string='';
+			////alert("comment for id :"+global_id+"is : "+comments);
+
+			if(comments!=null || comments!='undefined')
+			{	
+				var comments_split_semicolon = new Array();
+				comments_split_semicolon=comments.split(";");
+				////alert("semicolon : "+comments_split_semicolon[1]);
+				for(var j=0;j<comments_split_semicolon.length-1;j++)	//hashtags.length-1 is because the part after last comment's last semicolon is redundant
+					{
+						var comments_split_colon = new Array();
+						comments_split_colon=comments_split_semicolon[j].split(":");
+						var user=comments_split_colon[0];
+						var comm=comments_split_colon[1];
+			
+						global_return_string=global_return_string+''+user+' : '+comm+'<br />';
+					}
+			}
+			else
+			{
+				global_return_string='No comments to display';
+			}
+
+			var p_id='p'+global_id;
+			////alert("pid is: "+pId);
+			document.getElementById(pId).innerHTML=global_return_string;
+			////alert('AFTER CRAP '+i);
+
+			//ni.appendChild(newdiv);
+  	  }
+
+  	}
+
+    
+
+
+
+
+
+    
+}
+
+function errorCB(err) {
+    ////alert("errorCB");
+    console.log("Error processing SQL: "+err.code);
+}
+
+function addcomment(click_id)
+{
+
+	
+	comment_id=click_id.substring(6);
+	var textid_passed='text'+comment_id;
+	////alert("comment to be generated for id : "+comment_id);
+	var textarea=document.getElementById(textid_passed).value;
+	var username_comment=window.sessionStorage.getItem("username");
+	
+    window.sessionStorage.setItem("username", username_comment);
+	
+	text_to_be_added=''+username_comment+' : '+textarea+' ; ';
+	db = window.openDatabase("DB18", "8.0", "Database Demo", 200000);
+	db.transaction(queryDB_retcomments,errorCB);
+}
+
+function queryDB_retcomments(tx)
+{
+	////alert("in querydb_retcomments");
+	tx.executeSql('SELECT * FROM FEEDBACK WHERE id="'+comment_id+'"', [], queryDB_update, errorCB);
+	
+}
+
+function queryDB_update(tx,results)
+{
+	
+var entire_comments=results.rows.item(0).comments;	
+var final_text_updated=entire_comments+''+text_to_be_added;
+////alert(final_text_updated);
+tx.executeSql("UPDATE FEEDBACK SET comments='"+final_text_updated+"' WHERE id= '"+comment_id+"' ;",[],querySuccessupdate,errorCB);
+
+}
+
+function querySuccessupdate()
+
+{
+
+////alert("updated successfully");
+window.location="layout.html";
+}
+/*function generate_comments(click_id)
+{
+	//alert("Comments to be generated for id: "+click_id);
+	global_id=click_id;
+
+	
+	db.transaction(queryDB_comment, errorCB);
+		
+}*/
+
+/*function queryDB_comment(tx)
+{
+	//alert("querydb_comment");
+    tx.executeSql('SELECT * FROM FEEDBACK WHERE id="'+global_id+'"', [], querySuccess_comment, errorCB);
+}*/
+
+/*function comment_break()
+{
+	//var len = results.rows.length;
+	global_return_string='';
+	//full_comments=results.rows.item(0).comments;
+	////alert("full : "+full_comments);
+	//alert("comment for id :"+global_id+"is : "+comments);
+
+	//var buttonId = 'button'+global_id;
+	
+	//var newdiv1 = document.createElement('div');
+	//var newdiv1Id = 'newdiv'+global_id;
+	//newdiv1.setAttribute('id',newdiv1Id);
+
+
+	if(full_comments!=null || full_comments!='undefined')
+	{	
+		var comments_split_semicolon = new Array();
+		comments_split_semicolon=full_comments.split(";");
+		////alert("semicolon : "+comments_split_semicolon[1]);
+		for(var i=0;i<comments_split_semicolon.length-1;i++)	//hashtags.length-1 is because the part after last comment's last semicolon is redundant
+		{
+			var comments_split_colon = new Array();
+			comments_split_colon=comments_split_semicolon[i].split(":");
+			var user=comments_split_colon[0];
+			var comm=comments_split_colon[1];
+			
+			
+			global_return_string=global_return_string+''+user+' : '+comm+'<br />';
+			//newdiv1.innerHTML = ''+user+' : '+comm+'<br />';
+			//var divId = 'div'+global_id;
+			//var oldDiv = document.getElementById(divId);
+			//oldDiv.appendChild(newdiv1);
+			////alert(""+global_return_string);		
+		}
+	}
+	else
+	{
+		global_return_string='No comments to display';
+		
+	}
+	var p_id='p'+global_id;
+
+	document.getElementById(p_id).innerHTML=global_return_string;
+
+	
+	//newdiv1.innerHTML = global_return_string+
+    //'<hr/>'+'<textarea cols="20" rows="10" placeholder="comment here"></textarea>'+'<br/>'+'<input type="button" id="'+buttonId+'" value="comment" onclick="addcomment();"></input>';
+	//var divId = 'div'+global_id;
+	//var oldDiv = document.getElementById(divId);
+	//oldDiv.appendChild(newdiv1);
+
+}*/
+
+
+	function search_tag()
+	{
+		//alert("Searching");
+		removeElement();
+		search_id = new Array();
+		db = window.openDatabase("DB18", "8.0", "Database Demo", 200000);
+	    db.transaction(queryDB_search, errorCB);
+	}
+
+	function queryDB_search(tx) 
+	{
+		////alert("executing query select *");
+    	tx.executeSql('SELECT * FROM FEEDBACK', [], querySuccess_search, errorCB);        
+	}
+
+	function trim (myString)     
+	{     
+	    return myString.replace(/^s+/g,'').replace(/s+$/g,'')     
+	}
+
+	function querySuccess_search(tx, results) 
+	{
+		////alert("executing query select......SUCCESS");
+	    
+	    var hashtags = new Array();
+	    var search_word=null;
+		var search_keyword = document.getElementById("search").value;
+
+		////alert("searching every comment");
+	    
+	    var len = results.rows.length;
+	    var k=0;
+	    ////alert("DEMO table: " + len + " rows found.");
+	    for (var i=0; i<len; i++)
+	    {
+	       	////alert("Row = " + (i+1) + " ID = " + results.rows.item(i).key_id + " Username =  " + results.rows.item(i).username);
+			var feedback=results.rows.item(i).post;
+			var trimmed_feedback=trim(feedback);
+			hashtags=trimmed_feedback.split("#");
+			var flag = 0;
+			
+			for(var j=1;j<hashtags.length && flag==0;j++)
+			{
+				var keyword = trim(hashtags[j]);
+				
+				//Console.log("hashtag "+i+": "+keyword);
+				
+				if(keyword.indexOf(" ")!=-1)
+				{
+	    			var split_on_space_keyword = new Array();
+					split_on_space_keyword=keyword.split(" ");
+					
+					search_word=trim(split_on_space_keyword[0]);
+					////alert("Inside space found");
+					if(search_word.toLowerCase() ==search_keyword.toLowerCase() )
+					{
+	    				////alert(results.rows.item(i).comments);
+						search_id[k]=results.rows.item(i).id;
+	    				u_comments[k]=results.rows.item(i).comments;
+	    				////alert("Keyword found at: "+u_names[k]);
+	    				flag=1;
+	    				k++;
+					}
+					
+				}
+				else
+				{
+					search_word=trim(hashtags[j]);
+					////alert("Inside space not found");
+					if(search_word.toLowerCase() ==search_keyword.toLowerCase() )
+					{
+						////alert(results.rows.item(i).comments);
+						search_id[k]=results.rows.item(i).id;
+	    				u_comments[k]=results.rows.item(i).comments;
+	    				////alert("Keyword found at: "+u_names[k]);
+	    				flag=1;
+	    				k++;
+					}
+				}				
+			}			
+	    }
+
+	    if(search_id.length==0)
+	    {
+	    	//document.getElementById("noFeed").innerHTML='No Feedbacks match your search criteria';
+			//alert("No Feedbacks match your search criteria");
+		}
+	    else
+	    {
+	    	
+	    	db = window.openDatabase("DB18", "8.0", "Database Demo", 200000);
+		   	db.transaction(queryDB_display, errorCB);
+	    }
+			
+	}
+
+	function queryDB_display(tx)
+	{
+		for(var z=0;z<search_id.length;z++)
+		{
+			tx.executeSql('SELECT * FROM FEEDBACK WHERE id="'+search_id[z]+'"', [], querySuccess, errorCB);
+		}		
+	}
+
+
+	//akshay
+	function likeUpdate(like_id) {
+      temp=like_id.substring(10);
+      db = window.openDatabase("DB18", "8.0", "Database Demo", 200000);
+    db.transaction(update_like,errorCB);
+}
+
+
+function update_like(tx)
+{
+      tx.executeSql('SELECT * FROM FEEDBACK WHERE id="'+temp+'"', [], queryDB_update_like, errorCB);
+}
+
+
+function queryDB_update_like(tx, results)
+{
+      var like = results.rows.item(0).no_of_likes;
+      //alert("before" + like);
+      like++;
+      //alert("after" + like);
+      tx.executeSql("UPDATE FEEDBACK SET no_of_likes='"+like+"' WHERE id= '"+temp+"' ;",[],querySuccessupdate,errorCB);
+}
+	
+
+	
+</script>
+
+
+
+
+
+
+</head>
+<body onload="init();">
+
+<!-- Explore -->
+<div id="explore" data-role="page">
+    <div data-role="header" data-theme="b">
+        <h3>
+            INFYDBACK
+        </h3>
+    </div>
+    <div data-role="content">
+      <!--    <div data-role="fieldcontain">
+            <fieldset data-role="controlgroup">
+                <label for="searchinput1">
+                </label>
+                <input id="searchinput1" type="search" placeholder="search for #hashtag"
+                value="">
+            </fieldset>
+        </div>-->
+        
+        <fieldset class="ui-grid-a">
+    		<div class="ui-block-a" style="width:80%">
+            	<input type="text" id="search" name="searchtext" placeholder="search for #hashtag">
+    		</div>
+    		<div class="ui-block-b" style="width:20%">
+           		<input type="button" data-iconpos="notext" data-icon="search" data-theme="d" onclick="search_tag();" data-ajax="false"/>
+    		</div>
+        </fieldset>
+        
+        
+        <p id="noFeed"></p>
+        <input type="hidden" value="0" id="theValue" />
+
+        <!-- <p><a href="javascript:;" onclick="populate();">Add Some Elements</a></p> -->
+
+        <div id="myDiv"> </div>
+           
+        
+    </div>
+    <div data-role="footer" data-theme="b" data-position="fixed">
+
+        <a href="layout.html" data-role="button" data-icon="star" data-iconpos="right" data-theme="b">Explore</a>
+
+        <a  href="postfeedback.html" data-role="button" data-icon="plus"
+        data-iconpos="right" data-theme="b">
+            Post 
+        </a>
+        <a  href="profile.html" data-role="button" data-icon="home"
+        data-iconpos="right" data-theme="b">
+            Profile
+        </a>
+    </div>
+</div>
+
+
+</body>
+</html>

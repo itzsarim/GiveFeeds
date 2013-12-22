@@ -1,0 +1,339 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta name="viewport" content="width=device-width, initial-scale=1">
+
+
+	<title>PhoneGap</title>
+<script type="text/javascript" src="cordova-2.2.0.js"></script>
+
+<link rel="stylesheet" href="css/jquery.mobile-1.2.0.min.css">
+
+
+<script type="text/javascript" src="js/jquery.min.1.6.4.js"></script>
+<script type="text/javascript" src="js/jquery.mobile-1.2.0.min.js"></script>
+	<script type="text/javascript" charset="utf-8">
+
+/** Called when browser load this page*/
+
+ var user1=null;
+ var email1=null;
+ var pass1=null;
+ var username_flag=0;
+ var password_flag=0;
+ var email_flag=0;
+ var count = 0;
+ 
+
+ document.addEventListener("deviceready", onDeviceReady, false);
+
+    function onDeviceReady() 
+    {
+        
+    }
+
+//Create the database table 
+//
+function createDB(tx) 
+{
+	tx.executeSql('CREATE TABLE IF NOT EXISTS LOGIN (username VARCHAR(255) PRIMARY KEY, password VARCHAR(255), name VARCHAR(255), email VARCHAR(255))');
+	tx.executeSql('CREATE TABLE IF NOT EXISTS FEEDBACK (id INTEGER PRIMARY KEY AUTOINCREMENT, username VARCHAR(255), uri_image VARCHAR(255), uri_video VARCHAR(255), uri_audio VARCHAR(255), post VARCHAR(255), comments VARCHAR(255), no_of_likes INTEGER)');
+    tx.executeSql('CREATE TABLE IF NOT EXISTS URI1 (id INTEGER PRIMARY KEY AUTOINCREMENT, data VARCHAR(255))');	
+}
+
+// Populate the database table 
+//
+function populateDB(tx) 
+{
+	var user = document.getElementById("username");
+	var password = document.getElementById("password");
+	var name = document.getElementById("name");
+	var email = document.getElementById("email");
+    
+    tx.executeSql('INSERT INTO LOGIN (username,password,name,email) VALUES ("'+ user.value+'","'+ password.value+'","'+ name.value+'","'+ email.value+'")',errorDB,insertsuccess);
+}
+
+
+function insertsuccess()
+{
+	navigator.notification.alert("You have successfully registered....Click OK to go to Login page!!!!", alertCallback, "Redirecting....", "OK");	
+}
+
+function alertCallback()
+{
+	window.location = "/android_asset/www/login.html";
+}
+
+
+// Transaction error callback
+//
+function errorCB(err) 
+{
+    alert("Error processing SQL: "+err.code);
+}
+
+function errorDB() 
+{
+	alert("Username already taken. Please change username !!!!");  	    	                    
+}
+
+
+// Table created Successfully
+function successDB() 
+{        
+    var db = window.openDatabase("DB18", "1.0", "Database Demo", 200000);
+    db.transaction(populateDB,errorDB);            
+}
+
+// Cordova is ready
+//
+
+
+function registerclick()
+{
+	var user = document.getElementById("username").value;
+	var password = document.getElementById("password").value;
+	var name = document.getElementById("name").value;
+	var email = document.getElementById("email").value;
+	var count =0;
+
+	
+	if(name.length == 0)
+	{
+	alert("Please enter Name");
+	count = count + 1;
+	}
+	else if(email.length == 0)
+	{
+		alert("Please enter Email");
+		count = count + 1;	
+	} 
+	else if(user.length == 0)
+	{
+		alert("Please enter Username");
+		count = count + 1;	
+	}
+	else if(password.length == 0)
+	{
+		alert("Please enter Password");
+		count = count + 1;	
+	}
+	else if(email_flag != 0)
+	{
+		alert("Email not proper");
+		count = count + 1;
+	}
+	else if(username_flag != 0)
+	{
+		alert("Username not proper");
+		count=count+1;
+	}
+	else if(password_flag != 0)
+	{
+		alert("Password not proper");
+		count = count + 1;
+	}  
+	else if(count==0 && username_flag==0 && password_flag==0 && email_flag==0)
+	{
+		var db = window.openDatabase("DB18", "1.0", "Database Demo", 200000);
+		db.transaction(createDB, errorCB);			
+	    db.transaction(successDB,errorCB);
+	}            
+}
+
+// username validation 
+function checkusernameavailability(user)
+{
+	user1 = user.value;
+	var db = window.openDatabase("DB18", "1.0", "Database Demo", 200000);
+	db.transaction(createDB, errorCB);
+
+	if(user1.length !=0)
+	{
+		if(user1.length < 6)
+		{		
+			alert("Username should have atleast 6 characters");
+			username_flag++;						
+		}
+		else
+		{
+		 db.transaction(queryDB, errorCB);         
+		}
+	}
+}
+
+
+// email validation
+function validateemail(email)
+{
+	 email1=email.value;   
+     
+     var x=email1.indexOf('@');
+     var y=email1.lastIndexOf('.');
+     var z=email1.lastIndexOf('@');
+     
+  
+     if (email1.length!=0) 
+     {
+           if ((x == -1 || y == -1))
+           {
+                 email_flag++;
+                 alert("@ or . not entered");                 
+           }
+           else if(x < 4)
+           {
+                 email_flag++;                 
+                 alert("Enter atleast 4 characters before @");                 
+           }
+           else if((x+4)>y)
+           {
+                 email_flag++;
+                 alert("Enter atleast 3 characters between @ and.");                 
+           }
+           else if(x != z)
+           {
+                 email_flag++;
+                 alert("@ should not come after .");                 
+           }
+           else if((email1.length - 3) < y)
+           {
+                 email_flag++;
+                 alert("There should be atleast 2 letters after last dot (e.g. : .com)");                 
+           }
+           else 
+           {
+                 email_flag = 0;                                
+           }
+      }
+}
+
+
+// password validation
+function validatepassword(password)
+{
+	var flagNum = 0;
+	var flagAlpha = 0;
+	var flagLen = 0;
+	pass1 = password.value;
+	var pass = pass1.split("");
+		
+	for (var i = 0; i < pass.length; i++) 
+	{
+		if (isNaN(pass[i])) 
+		{
+			flagAlpha = 1;
+		}
+		else  
+		{
+			flagNum = 1;
+		} 
+		
+	}
+	if (pass.length >= 8 && pass.length <= 20) 
+	{
+		flagLen = 1;
+	}
+	if(flagLen !=1)
+	{
+		password_flag++;
+		alert("Password should have a minimum length of 8");		
+	}
+	else if(flagNum !=1)
+	{
+		password_flag++;
+		alert("Password should have atleast one number");
+	}
+	else if(flagAlpha !=1)
+	{
+		password_flag++;
+		alert("Password should have atleast one letter");								
+	}
+	else
+	{
+		password_flag=0;				
+	}
+}
+
+function queryDB(tx) {
+	
+    tx.executeSql('SELECT * FROM LOGIN WHERE username = "'+user1+'"', [], querySuccess, errorDB);
+}
+
+function querySuccess(tx, results)
+{
+	var len = results.rows.length;	
+	if(len == 1)
+	{
+		errorDB();
+		username_flag++;		
+	}
+	else
+	{
+		username_flag=0;
+	}
+}
+
+
+
+
+</script>
+
+
+
+</head>
+
+
+<body >          
+
+
+<!-- Register -->
+<div id="register" data-role="page">
+    <div data-role="header" data-theme="b">
+        <h3>
+            Infydback
+        </h3>
+    </div>
+    <div data-role="content">
+    <form id="register" >
+        <div data-role="fieldcontain">
+          
+            <fieldset data-role="controlgroup">
+                <label for="textinput2">
+                    name
+                </label>
+                <input id="name" type="text" placeholder="Enter your name here" value="" >
+            </fieldset>
+        </div>
+        <div data-role="fieldcontain">
+            <fieldset data-role="controlgroup">
+                <label for="textinput3">
+                    email
+                </label>
+                <input id="email" type="email" placeholder="Enter valid email ID" value="" onchange="validateemail(this)" >
+            </fieldset>
+        </div>
+        <div data-role="fieldcontain">
+            <fieldset data-role="controlgroup">
+                <label for="textinput4">
+                    username
+                </label>
+                <input id="username" type="text" placeholder="Select a Username" value="" onchange="checkusernameavailability(this)">
+            </fieldset>
+        </div>
+        <div data-role="fieldcontain">
+            <fieldset data-role="controlgroup">
+                <label for="textinput5">
+                    password
+                </label>
+                <input id="password" type="password" placeholder="Choose a password" value="" onchange="validatepassword(this)">
+            </fieldset>
+        </div>
+        <input type="button" value="Register" data-theme="d" onclick="registerclick();" data-ajax="false"/>
+        </form>       
+       
+
+    </div>
+</div>
+
+</body>
+</html>

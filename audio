@@ -1,0 +1,153 @@
+<!DOCTYPE html >
+<html>
+  <head>
+    <meta name="viewport" content="initial-scale=1.0, maximum-scale=1.0">
+    <meta http-equiv="Content-type" content="text/html; charset=utf-8">
+    <title>PhoneGap</title>
+    <style type="text/css">
+        div {border: 1px solid black;}
+        input {width: 100%;}
+    </style>
+     <script type="text/javascript" charset="utf-8" src="cordova-2.2.0.js"></script>
+     
+    <link rel="stylesheet" href="css/jquery.mobile-1.2.0.min.css">
+
+
+    <script type="text/javascript" src="js/jquery.min.1.6.4.js"></script>
+    <script type="text/javascript" src="js/jquery.mobile-1.2.0.min.js"></script>    
+    
+    <script type="text/javascript" charset="utf-8">      
+    var deviceReady = false;
+    var db = null;
+    var uri1 = null;
+    var audio = null;
+    
+    document.addEventListener("deviceready", onDeviceReady, false);
+
+    function onDeviceReady() 
+    {
+        
+    }
+
+    function captureSuccess(mediaFiles) {
+        var i, len;
+        ////alert("inside success");
+        for (i = 0, len = mediaFiles.length; i < len; i += 1) {
+            uploadFile(mediaFiles[i]);
+        }       
+    }
+
+
+
+    // Called if something bad happens.
+    // 
+    function captureError(error) {
+        var msg = 'An error occurred during capture: ' + error.code;
+        navigator.notification.alert(msg, null, 'Uh oh!');
+    }
+
+
+
+    // A button will call this function
+    //
+    function recordAudio() {
+        // Launch device video recording application, 
+        // allowing user to capture up to 2 video clips
+        navigator.device.capture.captureAudio(captureSuccess, captureError, {limit: 1});
+    }
+
+
+
+    //insert video
+    function insert_audio_recorded(tx) {
+        ////alert("inside insert");
+       tx.executeSql('INSERT INTO URI (data) VALUES ("' + uri1 +'")');
+       document.getElementById('audio_rec').src = uri1;
+       ////alert(""+document.getElementById('audio_rec').src);
+        document.getElementById('audio_status').innerHTML = "Success";
+    }
+
+    function insert_audio_selected(tx) {
+        ////alert("inside insert");
+       tx.executeSql('INSERT INTO URI (data) VALUES ("' + uri1 +'")');
+       document.getElementById('audio_rec').src = uri1;
+       ////alert(""+document.getElementById('audio_rec').src);
+       document.getElementById('audio_status').innerHTML = "Success";
+    }
+
+
+
+    //select video
+    //
+    function selectAudio() {
+       navigator.camera.getPicture(
+                function(uri)
+                {
+                    ////alert("inside selectaudio");
+                    audio = document.getElementById('audio_rec');
+                    audio.style.visibility = "visible";
+                    audio.style.display = "block";
+                    audio.src = uri;
+                    uri1 = audio.src;
+                    window.sessionStorage.setItem("mediaurl", uri1);
+                    var db = window.openDatabase("DB18", "7.0", "Database Demo", 200000);
+                    db.transaction(insert_audio_selected, captureError);
+                },
+                function(e)
+                {
+                    ////alert(e+"");
+                    console.log("Error selecting audio file : " + e);
+                    document.getElementById('audio_status').innerHTML = "Error selecting audio file";
+                },
+                { quality: 50, destinationType: navigator.camera.DestinationType.FILE_URI, sourceType: navigator.camera.PictureSourceType.PHOTOLIBRARY, mediaType: navigator.camera.MediaType.ALL});
+    }
+
+
+
+    // Upload files to server
+    function uploadFile(mediaFile) {
+       ////alert("inside upload");
+        path = mediaFile.fullPath;
+        //name = mediaFile.name;
+        ////alert(""+path);
+        //tx.executeSql('CREATE TABLE IF NOT EXISTS URI (id INTEGER PRIMARY KEY AUTOINCREMENT, data VARCHAR(255))');
+         audio = document.getElementById('audio_rec');
+         audio.style.visibility = "visible";
+         audio.style.display = "block";
+         uri1 = path;
+         document.getElementById('audio_rec').src = path;
+         ////alert(""+document.getElementById('audio_rec').src);
+         window.sessionStorage.setItem("mediaurl", uri1);
+         var db = window.openDatabase("DB18", "8.0", "Database Demo", 200000);
+         db.transaction(insert_audio_recorded, captureError);
+    }
+    
+    </script>
+  </head>
+
+<body>
+<div data-role="page">
+
+<div data-role="header" data-theme="b">
+    <h3>Upload Audio</h3>
+    </div>
+    
+    
+     <div>
+            <h3>Audio:</h3>
+            <b>Status:</b> <span id="audio_status"></span><br>
+        <b>Recording:</b> <audio id="audio_rec" src=""></audio> 
+     </div>
+        
+    <!-- Actions -->
+    <div>
+        <input type="button" onclick="recordAudio();" value="Record Audio" data-theme="d"/><br/>
+        <input type="button" onclick="selectAudio();" value="Select Recording from Library" data-theme="d"/><br/>
+        <a data-role="button"  href="postfeedback.html" value="Upload Audio Recording" data-ajax="false" data-theme="d">Upload Audio Recording</a>
+    </div>
+    <br/>
+        
+   </div>
+  </body>
+</html>
+audio

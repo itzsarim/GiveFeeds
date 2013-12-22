@@ -1,0 +1,187 @@
+<!DOCTYPE html >
+<html>
+<head>
+<meta name="viewport" content="width=device-width, initial-scale=1">
+      
+
+<link rel="stylesheet" href="css/jquery.mobile-1.2.0.min.css">
+
+<script type="text/javascript" src="cordova-2.2.0.js"></script>
+<script type="text/javascript" src="js/jquery.min.1.6.4.js"></script>
+<script type="text/javascript" src="js/jquery.mobile-1.2.0.min.js"></script>
+
+<script type="text/javascript" charset="utf-8">
+
+var username=window.sessionStorage.getItem("username");
+var uri_image;
+var uri_video;
+var uri_audio;
+var post;
+var comments;
+var no_of_likes = 0;
+var db = null;
+
+
+function url()
+{
+      username=window.sessionStorage.getItem("username");
+      window.sessionStorage.setItem("username", username);
+      document.getElementById("username").innerHTML=username;
+      /*db = window.openDatabase("DB88", "7.0", "Database Demo", 200000);
+      db.transaction(queryDB1, errorCB, successCB);*/
+	  //alert("in url");
+      
+uri_image=window.sessionStorage.getItem("imageurl");
+uri_video=window.sessionStorage.getItem("videourl");
+uri_audio=window.sessionStorage.getItem("audiourl");
+////alert(uri_image);
+////alert(uri_video);
+////alert(uri_audio);
+if(uri_image != null)
+{
+	img = document.getElementById('camera_image');
+	img.style.visibility = "visible";
+	img.style.display = "block";
+	img.src=uri_image;
+}
+if(uri_video != null)
+{
+	vid = document.getElementById('camera_video');
+	vid.style.visibility = "visible";
+	vid.style.display = "block";
+	vid.src=uri_video;
+}
+if(uri_audio != null)
+{
+	aud = document.getElementById('camera_audio');
+	aud.style.visibility = "visible";
+	aud.style.display = "block";
+	aud.src=uri_audio;
+}
+
+
+}
+
+/*
+function queryDB1(tx) {
+      tx.executeSql('SELECT * FROM URI', [], querySuccess1, errorCB);
+}
+function querySuccess1(tx, results) {
+    var len = results.rows.length;
+    ////alert("DEMO table: " + len + " rows found.");
+   
+       // //alert("Row = " + i + " ID = " + results.rows.item(i).id + " uri =  " + results.rows.item(i).uri);
+         uri_image=results.rows.item(0).uri;
+         uri_video=results.rows.item(0).uri;
+         uri_audio=results.rows.item(0).uri;
+        
+}
+*/
+
+function posting()
+{
+      ////alert("posting");
+      db = window.openDatabase("DB18", "8.0", "Database Demo", 200000);
+    db.transaction(populateDB, errorCB, successCB);
+}
+
+function populateDB(tx)
+{
+      post = document.getElementById('post').value;
+    ////alert("populatedb");
+    
+
+    tx.executeSql('INSERT INTO FEEDBACK (username,uri_image,uri_video,uri_audio,post,comments,no_of_likes) VALUES ("'+ username+'","'+ uri_image+'","'+ uri_video+'","'+ uri_audio+'","'+ post+'","'+ comments+'","'+ no_of_likes+'")');
+
+
+}
+
+function errorCB(err) {
+    ////alert("errorCB");
+    console.log("Error processing SQL: "+err.code);
+}
+function successCB() {
+    ////alert("successCB");
+    db = window.openDatabase("DB18", "8.0", "Database Demo", 200000);
+    db.transaction(queryDB, errorCB);
+}
+
+function queryDB(tx) {
+      ////alert("querydb");
+    tx.executeSql('SELECT * FROM FEEDBACK', [], querySuccess, errorCB);
+}
+function querySuccess(tx, results) 
+{
+    var len = results.rows.length;
+    ////alert("DEMO table: " + len + " rows found.");
+   /* for (var i=0; i<len; i++){
+
+        
+       // //alert("Row = " + i + " ID = " + results.rows.item(i).id + " uri =  " + results.rows.item(i).uri);
+    }*/
+}
+
+
+
+</script>
+
+
+
+</head>
+<body onload="url();">
+
+<!-- Post Feedback -->
+<div id="postfeedback" data-role="page">
+    <div data-role="header" data-theme="b">
+        <h3>
+            Post Feedback
+        </h3>
+    </div>
+    <div data-role="content">
+        <div style="display: inline;">
+            <a data-role="button" href="image.html" data-ajax="false">Upload Image</a>
+        </div>
+        <div style="display: inline;">
+            <a data-role="button" href="camera_vid.html" data-ajax="false">Upload Video</a>
+        </div>
+         <div style="display: inline;">
+            <a data-role="button" href="audio.html" data-ajax="false">Upload Audio</a>
+        </div>
+        
+       <img style="width:120px;visibility:hidden;display:none;" id="camera_image" src="" />
+       <video style="width:120px;visibility:hidden;display:none;" id="camera_video" src=""></video>
+       <audio style="width:120px;visibility:hidden;display:none;" id="camera_audio" src=""></audio>
+        
+    <form onsubmit="posting();">  
+        
+        <div data-role="fieldcontain">
+           <h2 id="username"></h2>
+                <textarea id="post" placeholder="write your feedback here."></textarea>
+            
+        </div>
+        <input type="submit" value="POST" data-theme="d"/>
+    </form>  
+    </div>
+    <div data-role="footer" data-theme="b" data-position="fixed">
+        <a href="layout.html" data-role="button" data-icon="star" data-iconpos="right" data-theme="b" data-ajax="false">Explore</a>
+
+        <a  href="postfeedback.html" data-role="button" data-icon="plus"
+        data-iconpos="right" data-theme="b" data-ajax="false">
+            Post 
+        </a>
+        <a  href="profile.html" data-role="button" data-icon="home"
+        data-iconpos="right" data-theme="b" data-ajax="false">
+            Profile
+        </a>
+
+    
+</div>
+
+
+
+
+    
+    </div>
+</body>
+</html>
+       

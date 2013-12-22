@@ -1,0 +1,185 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta name="viewport" content="width=device-width, initial-scale=1">
+
+
+       <title>PhoneGap</title>
+<script type="text/javascript" src="cordova-2.2.0.js"></script>
+
+<link rel="stylesheet" href="css/jquery.mobile-1.2.0.min.css">
+
+
+<script type="text/javascript" src="js/jquery.min.1.6.4.js"></script>
+<script type="text/javascript" src="js/jquery.mobile-1.2.0.min.js"></script>
+       <script type="text/javascript" charset="utf-8">
+
+/** Called when browser load this page*/
+
+document.addEventListener("deviceready", onDeviceReady, false);
+
+    
+/*function init()
+{
+       //alert("in init");
+       var db = window.openDatabase("DB99", "1.0", "Database Demo", 200000);
+    db.transaction(createDB, errorCB); 
+//document.addEventListener("deviceready", onDeviceReady, false);
+}*/
+
+//Cordova is ready
+//
+var user;
+
+function onDeviceReady() {
+       var db = window.openDatabase("DB18", "8.0", "Database Demo", 200000);
+    db.transaction(queryDB, errorCB);
+}
+
+
+
+//Update the database
+//
+
+function updatename()
+{
+       var db = window.openDatabase("DB18", "8.0", "Database Demo", 200000);
+    db.transaction(updatenameDB, errorCB);
+}
+
+
+function updatenameDB(tx) {
+       user = window.localStorage.getItem("username");
+       window.sessionStorage.setItem("username", user);
+       var name = document.getElementById("name");
+       tx.executeSql("UPDATE LOGIN SET name ='" +name.value+"' WHERE username = '"+user+"' ;", [],   querySuccessupdname, errorCB);
+}
+
+function updateemail()
+{
+       var db = window.openDatabase("DB18", "8.0", "Database Demo", 200000);
+    db.transaction(updateemailDB, errorCB);
+}
+
+
+function updateemailDB(tx) {
+       user = document.getElementById("username");
+       var email = document.getElementById("email");
+       tx.executeSql("UPDATE LOGIN SET email ='" +email.value+"' WHERE username = '"+user+"' ;", [],   querySuccessupdemail, errorCB);
+}
+
+
+function updatepassword()
+{
+       var db = window.openDatabase("DB18", "8.0", "Database Demo", 200000);
+    db.transaction(updatepasswordDB, errorCB);
+}
+
+
+function updatepasswordDB(tx) {
+       user = window.sessionStorage.getItem("username");
+       var password = document.getElementById("pwd");
+       tx.executeSql("UPDATE LOGIN SET password ='" +password.value+"' WHERE username = '"+user+"' ;", [],   querySuccessupdpassword, errorCB);
+}
+
+// Query the success callback
+//
+function querySuccessupdname() 
+{
+//alert("Name updated successfully !!!!");
+}
+function querySuccessupdemail() 
+{
+//alert("Email updated successfully !!!!");
+}
+function querySuccessupdpassword() 
+{
+//alert("Password updated successfully !!!!");
+}
+
+
+
+// Transaction error callback
+//
+function errorCB(err) {
+    //alert("Error processing SQL: "+err.code);
+}
+
+   
+
+
+
+
+
+
+</script>
+
+
+
+</head>
+
+
+<body >          
+
+
+<!-- Register -->
+<div id="register" data-role="page">
+    <div data-role="header" data-theme="b">
+        <h3>
+            Infydback
+        </h3>
+    </div>
+    <div data-role="content">
+    <form id="register" >
+        <div data-role="fieldcontain">
+          
+            <fieldset data-role="controlgroup">
+                <label for="textinput2">
+                    Name
+                </label>
+                <input id="name" type="text" placeholder="Enter your new name here" value="">
+            </fieldset>
+        </div>
+        <input type="button" value="Update Name" data-theme="d" onclick="updatename();" data-ajax="false"/>
+        
+        <div data-role="fieldcontain">
+            <fieldset data-role="controlgroup">
+                <label for="textinput3">
+                    Email
+                </label>
+                <input id="email" type="email" placeholder="Enter new valid email ID" value="">
+            </fieldset>
+        </div>
+        <input type="button" value="Update Email-Id" data-theme="d" onclick="updateemail();" data-ajax="false"/>
+        
+        <div data-role="fieldcontain">
+            <fieldset data-role="controlgroup">
+                <label for="textinput5">
+                   Password
+                </label>
+                <input id="pwd" type="password" placeholder="Choose a new password" value="">
+            </fieldset>
+        </div>
+        
+        <input type="button" value="Update Password" data-theme="d" onclick="updatepassword();" data-ajax="false"/>
+        </form>      
+        
+        
+    </div>
+    <div data-role="footer" data-theme="b" data-position="fixed">
+        <a href="layout.html" data-role="button" data-icon="star" data-iconpos="right" data-theme="b">Explore</a>
+
+        <a href="postfeedback.html" data-role="button" data-icon="plus"
+        data-iconpos="right" data-theme="b">
+            Post 
+        </a>
+        <a href="profile.html" data-role="button" data-icon="home"
+        data-iconpos="right" data-theme="b">
+            Profile
+        </a>
+
+    </div>
+</div>
+
+</body>
+</html>
